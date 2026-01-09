@@ -504,6 +504,8 @@ class App(tk.Tk):
         try:
             while True:
                 s = self.log_q.get_nowait()
+                # Remove null bytes from log text
+                s = s.replace("\x00", "")
                 self.txt.configure(state="normal")
                 self.txt.insert("end", s + "\n")
                 self.txt.see("end")
