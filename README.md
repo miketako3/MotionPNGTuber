@@ -2,6 +2,12 @@
 
 **PNGTuber以上、Live2D未満** — 動画ベースのリアルタイム口パク（リップシンク）システム
 
+## 📢 更新情報
+
+| 日付 | 内容 |
+|------|------|
+| 2026/01/09 | パッケージ管理を **uv** に移行。`uv sync` 1コマンドでインストール完了に。従来の複雑なpip/mim手順が不要になりました。 |
+
 ループ動画を使うことで、従来のPNGTuberでは表現できなかった**髪の毛の揺れ**や**衣装のなびき**をリッチに表現できます。Live2Dのような専門知識は不要で、MP4動画と口スプライトさえあれば始められます。
 
 ## ✨ 特徴
@@ -31,32 +37,25 @@
 ### 0. 前提条件（未インストールの場合）
 
 - **Python 3.10**: [ダウンロード](https://www.python.org/downloads/)（インストール時に「Add Python to PATH」にチェック）
-- **Visual C++ Build Tools**: [ダウンロード](https://visualstudio.microsoft.com/visual-cpp-build-tools/)（「C++ によるデスクトップ開発」を選択）
+- **uv**: Pythonパッケージマネージャー（[インストール方法](https://docs.astral.sh/uv/getting-started/installation/)）
+  ```bash
+  # Windows (PowerShell)
+  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+  ```
 
 ### 1. インストール（初回のみ）
 
 ```bash
-# 仮想環境を作成・有効化
-python -m venv .venv
-.venv\Scripts\activate
-
-# PyTorch をインストール（GPU版）
-pip install torch==2.0.1+cu118 torchvision==0.15.2+cu118 torchaudio==2.0.2+cu118 --index-url https://download.pytorch.org/whl/cu118
-
-# ※ CPU版の場合はこちら:
-# pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cpu
-
-# 依存パッケージをインストール
-pip install openmim
-mim install mmcv-full==1.7.0
-pip install mmdet==2.28.0 mmpose==0.29.0 anime-face-detector==0.0.9
-pip install opencv-python==4.8.1.78 numpy Pillow sounddevice scipy
+# プロジェクトディレクトリで実行
+uv sync
 ```
+
+これだけで仮想環境の作成と全ての依存パッケージのインストールが完了します。
 
 ### 2. GUIを起動
 
 ```bash
-python mouth_track_gui.py
+uv run python mouth_track_gui.py
 ```
 
 ### 3. サンプルで試す
@@ -108,7 +107,7 @@ python mouth_track_gui.py
 |------|------|
 | OS | Windows 10 / 11 |
 | Python | 3.10（3.10.x推奨） |
-| GPU | NVIDIA GPU + CUDA 11.8（推奨）または CPU のみ |
+| GPU | NVIDIA GPU + CUDA 11.7（推奨）または CPU のみ |
 | RAM | 8GB以上推奨 |
 
 ### GPUとCPUについて
@@ -122,90 +121,39 @@ python mouth_track_gui.py
 
 ### 1. 前提条件
 
-#### Microsoft Visual C++ Build Tools
-
-一部のパッケージをコンパイルするために必要です。
-
-1. [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) をダウンロード
-2. インストーラーで「**C++ によるデスクトップ開発**」を選択してインストール
-
 #### Python 3.10
 
 1. [Python 3.10.x](https://www.python.org/downloads/) をダウンロード
 2. インストール時に「**Add Python to PATH**」にチェック
 
-#### FFmpeg（オプション・推奨）
+#### uv（Pythonパッケージマネージャー）
 
-口消し動画に音声を残す場合に必要です。
+```powershell
+# PowerShellで実行
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
 
-1. [FFmpeg公式サイト](https://ffmpeg.org/download.html) からダウンロード
-2. 解凍して `bin` フォルダを環境変数 `PATH` に追加
+詳細は [uv公式ドキュメント](https://docs.astral.sh/uv/getting-started/installation/) を参照。
 
-### 2. 仮想環境の作成
+### 2. 依存パッケージのインストール
 
 ```bash
 # プロジェクトディレクトリに移動
 cd MotionPNGTuber
 
-# 仮想環境を作成
-python -m venv .venv
-
-# 仮想環境を有効化
-.venv\Scripts\activate
+# 仮想環境の作成と依存パッケージのインストール（1コマンドで完了）
+uv sync
 ```
 
-### 3. PyTorchのインストール
-
-**重要**: PyTorchは必ず先にインストールしてください。
-
-#### GPU版（CUDA 11.8）
-
-```bash
-pip install torch==2.0.1+cu118 torchvision==0.15.2+cu118 torchaudio==2.0.2+cu118 --index-url https://download.pytorch.org/whl/cu118
-```
-
-#### CPU版
-
-```bash
-pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cpu
-```
-
-### 4. mmcv-fullのインストール
-
-**重要**: `mmcv-full` は pip ではなく `mim` でインストールします。これが最も難しいステップです。
-
-```bash
-# openmimをインストール
-pip install openmim
-
-# mmcv-fullをインストール（時間がかかります）
-mim install mmcv-full==1.7.0
-```
-
-**トラブルシューティング**:
-- エラーが出る場合は、Visual C++ Build Toolsがインストールされているか確認
-- `mim install` が失敗する場合、`pip install mmcv-full==1.7.0` を試す（ただし非推奨）
-
-### 5. その他の依存パッケージ
-
-```bash
-# MMDetection と MMPose
-pip install mmdet==2.28.0 mmpose==0.29.0
-
-# anime-face-detector
-pip install anime-face-detector==0.0.9
-
-# 基本パッケージ
-pip install opencv-python==4.8.1.78 numpy Pillow sounddevice scipy
-
-# オプション: OBS仮想カメラ出力
-pip install pyvirtualcam
-```
+`uv sync` を実行すると：
+- `.venv` ディレクトリに仮想環境が自動作成される
+- `pyproject.toml` と `uv.lock` に基づいて全ての依存パッケージがインストールされる
+- PyTorch（CUDA 11.7対応）、mmcv-full、anime-face-detector など全て自動でインストールされる
 
 ### インストール確認
 
 ```bash
-python -c "import cv2; import numpy; import sounddevice; from anime_face_detector import create_detector; print('OK')"
+uv run python -c "import cv2; import numpy; import sounddevice; from anime_face_detector import create_detector; print('OK')"
 ```
 
 ---
@@ -226,7 +174,8 @@ MotionPNGTuber/
 ├── auto_erase_mouth.py             # 自動口消し
 ├── preview_mouth_track.py          # トラッキングプレビュー
 ├── realtime_emotion_audio.py       # 感情解析
-├── requirements.txt
+├── pyproject.toml                  # uv依存関係定義
+├── uv.lock                         # uvロックファイル
 ├── assets/                         # 動画アセット（サンプル）
 │   ├── assets01/
 │   │   ├── loop.mp4
@@ -285,7 +234,7 @@ mouth_dir/
 ### GUI（推奨）
 
 ```bash
-python mouth_track_gui.py
+uv run python mouth_track_gui.py
 ```
 
 #### ワークフロー
@@ -361,7 +310,7 @@ python mouth_track_gui.py
 ## 🎁 おまけツール: 口消しチューナーGUI
 
 ```bash
-python mouth_erase_tuner_gui.py
+uv run python mouth_erase_tuner_gui.py
 ```
 
 画像の口部分を削除できる単体ツールです。MotionPNGTuber本体とは独立して使用できます。
@@ -371,7 +320,7 @@ python mouth_erase_tuner_gui.py
 ## 🎨 おまけツール: 口スプライト抽出GUI
 
 ```bash
-python mouth_sprite_extractor_gui.py
+uv run python mouth_sprite_extractor_gui.py
 ```
 
 動画から口スプライト（5種類のPNG）を自動抽出するツールです。口スプライトを自分で描く必要がなくなります。
@@ -402,7 +351,7 @@ python mouth_sprite_extractor_gui.py
 ### 1. 顔トラッキング
 
 ```bash
-python face_track_anime_detector.py \
+uv run python face_track_anime_detector.py \
     --video assets/assets01/loop.mp4 \
     --out assets/assets01/mouth_track.npz \
     --device auto \
@@ -412,7 +361,7 @@ python face_track_anime_detector.py \
 ### 2. キャリブレーション
 
 ```bash
-python calibrate_mouth_track.py \
+uv run python calibrate_mouth_track.py \
     --video assets/assets01/loop.mp4 \
     --track assets/assets01/mouth_track.npz \
     --sprite mouth_dir/Tomari/Default/open.png \
@@ -422,7 +371,7 @@ python calibrate_mouth_track.py \
 ### 3. 口消し動画生成
 
 ```bash
-python auto_erase_mouth.py \
+uv run python auto_erase_mouth.py \
     --video assets/assets01/loop.mp4 \
     --track assets/assets01/mouth_track_calibrated.npz \
     --out assets/assets01/loop_mouthless.mp4 \
@@ -432,7 +381,7 @@ python auto_erase_mouth.py \
 ### 4. リアルタイム実行
 
 ```bash
-python loop_lipsync_runtime_patched_emotion_auto.py \
+uv run python loop_lipsync_runtime_patched_emotion_auto.py \
     --loop-video assets/assets01/loop_mouthless.mp4 \
     --mouth-dir mouth_dir/Tomari \
     --track assets/assets01/mouth_track_calibrated.npz \
@@ -457,39 +406,26 @@ python loop_lipsync_runtime_patched_emotion_auto.py \
 
 ## ❓ トラブルシューティング
 
-### mmcv-full のインストールが失敗する
+### uv sync が失敗する
 
-1. Visual C++ Build Tools がインストールされているか確認
-2. Python のバージョンが 3.10 か確認
-3. 以下を試す：
+1. Python 3.10 がインストールされているか確認
+2. uv が正しくインストールされているか確認（`uv --version`）
+3. キャッシュをクリアして再試行：
    ```bash
-   pip cache purge
-   mim install mmcv-full==1.7.0
+   uv cache clean
+   uv sync
    ```
-
-### anime-face-detector が動かない
-
-```bash
-pip uninstall anime-face-detector
-pip install anime-face-detector==0.0.9 --no-cache-dir
-```
 
 ### CUDA が認識されない
 
 ```bash
-python -c "import torch; print(torch.cuda.is_available())"
+uv run python -c "import torch; print(torch.cuda.is_available())"
 ```
 False の場合：
 - NVIDIA ドライバが最新か確認
-- CUDA Toolkit 11.8 がインストールされているか確認
-- PyTorch を再インストール
+- CUDA Toolkit 11.7 がインストールされているか確認
 
 ### sounddevice でエラー
-
-```bash
-pip uninstall sounddevice
-pip install sounddevice --no-cache-dir
-```
 
 オーディオデバイスが認識されない場合、Windowsのサウンド設定でマイクが有効か確認。
 
