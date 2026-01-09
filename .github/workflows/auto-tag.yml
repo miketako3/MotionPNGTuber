@@ -1,4 +1,4 @@
-name: Auto Tag on main
+name: Auto Release on main
 
 on:
   push:
@@ -46,12 +46,10 @@ jobs:
 
           echo "next=$next" >> "$GITHUB_OUTPUT"
 
-      - name: Push tag
+      - name: Create GitHub Release
         if: steps.next.outputs.already_tagged != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "${{ steps.next.outputs.next }}"
-          git push origin "${{ steps.next.outputs.next }}"
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.next.outputs.next }}
+          target_commitish: ${{ github.sha }}
+          generate_release_notes: true
