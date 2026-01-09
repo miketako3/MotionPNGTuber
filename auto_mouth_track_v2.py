@@ -671,7 +671,7 @@ def main() -> int:
 
     detector_py = args.detector
     if not os.path.isfile(detector_py):
-    here = app_dir()
+        here = app_dir()
         p = os.path.join(here, detector_py)
         if os.path.isfile(p):
             detector_py = p

@@ -145,6 +145,28 @@ cd MotionPNGTuber
 uv sync
 ```
 
+---
+
+## 🧱 デスクトップアプリのローカルビルド（Windows）
+
+GitHub Actionsを使わずにローカルでビルドしたい場合はこちら。
+
+### 1. 前提
+
+- Windows 10 / 11
+- Python 3.10
+- uv
+
+### 2. ビルド
+
+PowerShell で以下を実行:
+
+```powershell
+./tools/build_local.ps1
+```
+
+ビルド成果物は `dist/MotionPNGTuber/` に出力されます。
+
 `uv sync` を実行すると：
 - `.venv` ディレクトリに仮想環境が自動作成される
 - `pyproject.toml` と `uv.lock` に基づいて全ての依存パッケージがインストールされる
