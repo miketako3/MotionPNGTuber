@@ -31,6 +31,7 @@ from typing import Dict, List, Optional, Tuple
 import cv2
 import numpy as np
 
+from mpngtuber_runtime import app_dir, python_cmd
 
 @dataclass
 class Metrics:
@@ -194,7 +195,7 @@ def save_best_debug_outputs(debug_dir: str, best_npz: str, report: dict) -> None
 
 
 def run_detector(detector_py: str, args_map: Dict[str, Optional[str]]) -> int:
-    cmd: List[str] = [sys.executable, detector_py]
+    cmd: List[str] = python_cmd(detector_py)
     for k, v in args_map.items():
         if v is None:
             continue
@@ -670,7 +671,7 @@ def main() -> int:
 
     detector_py = args.detector
     if not os.path.isfile(detector_py):
-        here = os.path.dirname(os.path.abspath(__file__))
+    here = app_dir()
         p = os.path.join(here, detector_py)
         if os.path.isfile(p):
             detector_py = p

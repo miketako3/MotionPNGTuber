@@ -29,6 +29,8 @@ import signal
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 
+from mpngtuber_runtime import app_dir, python_cmd
+
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 LAST_SESSION_FILE = os.path.join(HERE, ".mouth_track_last_session.json")
@@ -155,6 +157,31 @@ def _safe_bool(v, default: bool = False) -> bool:
 
 
 _EMOTION_DIR_NAMES = {"default", "neutral", "happy", "angry", "sad", "excited"}
+
+
+def _run_script_mode(argv: list[str]) -> int | None:
+    if "--run-script" not in argv:
+        return None
+    idx = argv.index("--run-script")
+    if idx + 1 >= len(argv):
+        print("[runner] --run-script needs a script path", file=sys.stderr)
+        return 2
+    script = argv[idx + 1]
+    script_args = argv[idx + 2 :]
+    if script_args and script_args[0] == "--":
+        script_args = script_args[1:]
+    base = app_dir()
+    if not os.path.isabs(script):
+        script = os.path.join(base, script)
+    if not os.path.isfile(script):
+        print(f"[runner] script not found: {script}", file=sys.stderr)
+        return 2
+    if base not in sys.path:
+        sys.path.insert(0, base)
+    sys.argv = [script] + script_args
+    import runpy
+    runpy.run_path(script, run_name="__main__")
+    return 0
 
 
 def _is_emotion_level_mouth_root(mouth_root: str) -> bool:
@@ -855,7 +882,7 @@ class App(tk.Tk):
     def on_track_and_calib(self) -> None:
         def _worker():
             try:
-                base_dir = os.path.dirname(os.path.abspath(__file__))
+                base_dir = app_dir()
                 ok, msg = _ensure_backend_sanity(base_dir)
                 if not ok:
                     self._show_error("エラー", msg)
@@ -893,8 +920,7 @@ class App(tk.Tk):
                 })
 
                 self.log("\n=== [1/2] 解析（自動修復つき・最高品質） ===")
-                cmd = [
-                    sys.executable, os.path.join(base_dir, "auto_mouth_track_v2.py"),
+                cmd = python_cmd(os.path.join(base_dir, "auto_mouth_track_v2.py")) + [
                     "--video", video,
                     "--out", track_npz,
                     "--pad", f"{float(self.pad_var.get()):.2f}",
@@ -917,8 +943,7 @@ class App(tk.Tk):
                     return
 
                 self.log("\n=== [2/2] キャリブレーション（画面を閉じると完了） ===")
-                cmd = [
-                    sys.executable, os.path.join(base_dir, "calibrate_mouth_track.py"),
+                cmd = python_cmd(os.path.join(base_dir, "calibrate_mouth_track.py")) + [
                     "--video", video,
                     "--track", track_npz,
                     "--sprite", open_sprite,
@@ -944,7 +969,7 @@ class App(tk.Tk):
     def on_calib_only(self) -> None:
         def _worker():
             try:
-                base_dir = os.path.dirname(os.path.abspath(__file__))
+                base_dir = app_dir()
                 video = self.video_var.get().strip()
                 mouth_dir = self.mouth_dir_var.get().strip()
                 if not video:
@@ -972,8 +997,7 @@ class App(tk.Tk):
                 self.log("\n=== キャリブレーション（やり直し） ===")
                 if input_track == calib_npz:
                     self.log("[info] 既存のキャリブ済みトラックを使用（位置を維持）")
-                cmd = [
-                    sys.executable, os.path.join(base_dir, "calibrate_mouth_track.py"),
+                cmd = python_cmd(os.path.join(base_dir, "calibrate_mouth_track.py")) + [
                     "--video", video,
                     "--track", input_track,
                     "--sprite", open_sprite,
@@ -996,7 +1020,7 @@ class App(tk.Tk):
     def on_erase_mouthless(self) -> None:
         def _worker():
             try:
-                base_dir = os.path.dirname(os.path.abspath(__file__))
+                base_dir = app_dir()
                 video = self.video_var.get().strip()
                 mouth_dir = self.mouth_dir_var.get().strip()
                 if not video:
@@ -1022,8 +1046,7 @@ class App(tk.Tk):
                 cov_arg = ",".join(f"{x:.2f}" for x in covs)
 
                 self.log("\n=== 口消し動画生成（自動候補->自動選別） ===")
-                cmd = [
-                    sys.executable, os.path.join(base_dir, "auto_erase_mouth.py"),
+                cmd = python_cmd(os.path.join(base_dir, "auto_erase_mouth.py")) + [
                     "--video", video,
                     "--track", track_npz,
                     "--out", mouthless_mp4,
@@ -1303,7 +1326,7 @@ class App(tk.Tk):
     def on_live_run(self) -> None:
         def _worker():
             try:
-                base_dir = os.path.dirname(os.path.abspath(__file__))
+                base_dir = app_dir()
                 sess = load_session()
 
                 # 背景は session["video"]（mouthlessが入ってる想定）を優先
@@ -1344,8 +1367,7 @@ class App(tk.Tk):
                     runtime_py = os.path.join(base_dir, "loop_lipsync_runtime_patched.py")
 
                 self.log("\n=== ライブ実行（qで終了） ===")
-                cmd = [
-                    sys.executable, runtime_py,
+                cmd = python_cmd(runtime_py) + [
                     "--no-auto-last-session",
                     "--loop-video", loop_video,
                     "--mouth-dir", mouth_dir,
@@ -1396,4 +1418,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    rc = _run_script_mode(sys.argv)
+    if rc is not None:
+        raise SystemExit(rc)
     main()

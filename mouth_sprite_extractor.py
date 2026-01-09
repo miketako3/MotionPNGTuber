@@ -34,6 +34,7 @@ from typing import Dict, List, Optional, Tuple
 import cv2
 import numpy as np
 
+from mpngtuber_runtime import app_dir, python_cmd
 
 # ---------------------------------------------------------------------------
 # Data classes
@@ -488,15 +489,13 @@ class MouthSpriteExtractor:
             return track_out
         
         # face_track_anime_detector.py を実行
-        script_dir = os.path.dirname(os.path.abspath(__file__))
+        script_dir = app_dir()
         detector_script = os.path.join(script_dir, "face_track_anime_detector.py")
         
         if not os.path.isfile(detector_script):
             raise FileNotFoundError(f"Detector script not found: {detector_script}")
         
-        cmd = [
-            sys.executable,
-            detector_script,
+        cmd = python_cmd(detector_script) + [
             "--video", self.video_path,
             "--out", track_out,
             "--device", "auto",

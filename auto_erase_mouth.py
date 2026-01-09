@@ -30,6 +30,7 @@ from typing import List, Optional, Tuple
 import cv2
 import numpy as np
 
+from mpngtuber_runtime import app_dir, python_cmd
 
 # ----------------------------
 # Track loading (compatible with face_track_anime_detector.py output)
@@ -347,7 +348,7 @@ def score_mouthless(video_in: str, video_out: str, track: Track, n_out: int, nor
 def run_erase(erase_py: str, video: str, track_path: str, out_path: str,
              valid_policy: str, ref_frame: int, coverage: float, keep_audio: bool,
              shading: str, debug_dir: str = "") -> int:
-    cmd = [sys.executable, erase_py,
+    cmd = python_cmd(erase_py) + [
            "--video", video,
            "--track", track_path,
            "--out", out_path,
@@ -392,7 +393,7 @@ def main() -> int:
     # resolve erase script path
     erase_py = args.erase
     if not os.path.isfile(erase_py):
-        here = os.path.dirname(os.path.abspath(__file__))
+        here = app_dir()
         cand = os.path.join(here, erase_py)
         if os.path.isfile(cand):
             erase_py = cand

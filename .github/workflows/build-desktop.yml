@@ -1,0 +1,45 @@
+name: Build Desktop App (Windows)
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Sync dependencies
+        run: uv sync --frozen
+
+      - name: Install PyInstaller
+        run: uv pip install pyinstaller==6.10.0
+
+      - name: Build app
+        run: uv run pyinstaller MotionPNGTuber.spec
+
+      - name: Package artifact
+        shell: pwsh
+        run: |
+          $dist = "dist/MotionPNGTuber"
+          $zip = "MotionPNGTuber-windows.zip"
+          if (Test-Path $zip) { Remove-Item $zip }
+          Compress-Archive -Path "$dist/*" -DestinationPath $zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MotionPNGTuber-windows
+          path: MotionPNGTuber-windows.zip
