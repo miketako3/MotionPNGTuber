@@ -1,7 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 import os
 
-project_root = os.path.abspath(os.path.dirname(__file__))
+# PyInstaller spec executes without __file__ in some contexts (e.g. GH Actions).
+project_root = os.path.abspath(globals().get("SPECPATH", os.getcwd()))
 
 script_files = [
     "auto_mouth_track_v2.py",
