@@ -11,7 +11,6 @@ script_files = [
     "face_track_anime_detector.py",
     "erase_mouth_offline.py",
     "loop_lipsync_runtime_patched_emotion_auto.py",
-    "loop_lipsync_runtime_patched.py",
     "preview_mouth_track.py",
     "realtime_emotion_audio.py",
     "mouth_sprite_extractor.py",
